@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>우리 반 사이트</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f5f5f5;
+    }
+
+    header {
+      background: #333;
+      color: white;
+      padding: 15px;
+      font-size: 20px;
+    }
+
+    nav {
+      background: #555;
+      padding: 10px;
+    }
+
+    nav button {
+      margin-right: 10px;
+      padding: 8px 12px;
+      border: none;
+      cursor: pointer;
+      background: #eee;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+
+    button {
+      padding: 10px;
+    }
+
+    #loginBox {
+      padding: 20px;
+      background: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 로그인 -->
+<div id="loginBox">
+  <h2>로그인</h2>
+  <input id="loginId" placeholder="아이디">
+  <input id="loginPw" type="password" placeholder="비밀번호">
+  <button onclick="login()">로그인</button>
+</div>
+
+<header>📚 우리 반 사이트</header>
+
+<nav>
+  <button onclick="showPage('home')">홈</button>
+  <button onclick="showPage('notice')">공지사항</button>
+  <button onclick="showPage('timetable')">시간표</button>
+  <button onclick="showPage('board')">자유게시판</button>
+</nav>
+
+<div class="container">
+
+  <div id="home">
+    <h2>홈</h2>
+    <p>우리 반 사이트에 오신 걸 환영합니다!</p>
+  </div>
+
+  <div id="notice" class="hidden">
+    <h2>공지사항</h2>
+    <p>관리자 기능은 나중에 추가</p>
+  </div>
+
+  <div id="timetable" class="hidden">
+    <h2>시간표</h2>
+    <p>여기에 시간표 넣으면 됨</p>
+  </div>
+
+  <div id="board" class="hidden">
+    <h2>자유게시판</h2>
+
+    <!-- 비밀번호 변경 -->
+    <h3>비밀번호 변경</h3>
+    <input id="newPw" placeholder="새 비밀번호">
+    <button onclick="changePassword()">변경</button>
+
+    <hr>
+
+    <input id="title" placeholder="제목">
+    <textarea id="content" placeholder="내용"></textarea>
+    <button onclick="writePost()">작성</button>
+
+    <ul id="list"></ul>
+  </div>
+
+</div>
+
+<script>
+
+let currentUser = null;
+
+function showPage(page) {
+  const pages = ['home', 'notice', 'timetable', 'board'];
+
+  pages.forEach(p => {
+    document.getElementById(p).classList.add('hidden');
+  });
+
+  document.getElementById(page).classList.remove('hidden');
+}
+
+// 로그인
+async function login() {
+  const id = document.getElementById('loginId').value;
+  const password = document.getElementById('loginPw').value;
+
+  const res = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, password })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    currentUser = id;
+    alert("로그인 성공!");
+    document.getElementById('loginBox').style.display = 'none';
+  } else {
+    alert("아이디 또는 비밀번호 틀림");
+  }
+}
+
+// 비밀번호 변경
+async function changePassword() {
+  const newPassword = document.getElementById('newPw').value;
+
+  const res = await fetch('/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: currentUser,
+      newPassword: newPassword
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("비밀번호 변경 완료!");
+  } else {
+    alert("실패");
+  }
+}
+
+// 글 작성
+async function writePost() {
+  if (!currentUser) {
+    alert("로그인 먼저 하세요");
+    return;
+  }
+
+  const title = document.getElementById('title').value;
+  const content = document.getElementById('content').value;
+
+  await fetch('/post', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, content })
+  });
+
+  loadPosts();
+}
+
+// 글 목록
+async function loadPosts() {
+  const res = await fetch('/posts');
+  const data = await res.json();
+
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  data.forEach((post, index) => {
+    const li = document.createElement('li');
+    li.innerText = post.title + " - " + post.content;
+
+    if (currentUser === 'admin') {
+      const btn = document.createElement('button');
+      btn.innerText = "삭제";
+      btn.onclick = () => deletePost(index);
+      li.appendChild(btn);
+    }
+
+    list.appendChild(li); // ⭐ 이거 반드시 있어야 함
+  });
+}
+loadPosts();
+
+async function deletePost(index) {
+  console.log("삭제 클릭됨", index);
+
+  await fetch('/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index })
+  });
+
+  loadPosts();
+}
+
+</script>
+
+</body>
+</html>

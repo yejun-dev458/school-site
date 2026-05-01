@@ -307,6 +307,30 @@ async function deletePost(index) {
 
   loadPosts();
 }
+document.getElementById('noticeText').addEventListener('input', async () => {
+  if (currentUser !== 'admin') return;
+
+  const text = document.getElementById('noticeText').value;
+
+  await fetch('/notice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      user: currentUser
+    })
+  });
+});
+
+async function loadNotice() {
+  const res = await fetch('/notice');
+  const data = await res.json();
+
+  document.getElementById('noticeView').innerText = data.notice;
+  document.getElementById('noticeText').value = data.notice;
+}
+
+loadNotice();
 
 </script>
 

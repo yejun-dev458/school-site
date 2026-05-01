@@ -103,3 +103,13 @@ app.post('/delete', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/notice', (req, res) => {
+  const { text, user } = req.body;
+
+  if (user === 'admin') {
+    notice = text;
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
+});

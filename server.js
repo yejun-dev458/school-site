@@ -115,6 +115,8 @@ app.post('/notice', (req, res) => {
 });
 
 async function saveNotice() {
+  console.log("저장 버튼 클릭됨");
+
   if (currentUser !== 'admin') {
     alert("관리자만 가능");
     return;

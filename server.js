@@ -113,3 +113,23 @@ app.post('/notice', (req, res) => {
     res.json({ success: false });
   }
 });
+
+async function saveNotice() {
+  if (currentUser !== 'admin') {
+    alert("관리자만 가능");
+    return;
+  }
+
+  const text = document.getElementById('noticeText').value;
+
+  await fetch('/notice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      user: currentUser
+    })
+  });
+
+  loadNotice();
+}

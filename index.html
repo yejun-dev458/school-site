@@ -207,6 +207,12 @@ li button {
 
 <script>
 
+window.onload = function() {
+  function saveNotice() {
+    console.log("저장 버튼 클릭됨");
+  }
+}
+
 let currentUser = null;
 
 function showPage(page) {
@@ -356,6 +362,7 @@ async function loadNotice() {
 }
 
 loadNotice();
+
 
 </script>
 
